@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CRM SeLabs">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1a1a1a">
+<title>CRM SeLabs</title>
+<link rel="manifest" href="data:application/json,{%22name%22:%22CRM%20SeLabs%22,%22short_name%22:%22CRM%22,%22display%22:%22standalone%22,%22background_color%22:%22%23ffffff%22,%22theme_color%22:%22%231a1a1a%22}">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{
+  --bg:#fff;--bg2:#f5f5f3;--bg3:#efefec;
+  --text:#1a1a1a;--text2:#666;--text3:#999;
+  --border:#e0e0dc;--border2:#c8c8c4;
+  --radius:8px;--radius-lg:12px;
+  --blue-bg:#E6F1FB;--blue-txt:#0C447C;
+  --amber-bg:#FAEEDA;--amber-txt:#633806;
+  --green-bg:#EAF3DE;--green-txt:#27500A;
+  --red-bg:#FCEBEB;--red-txt:#791F1F;
+  --purple-bg:#EEEDFE;--purple-txt:#3C3489;
+  --teal-bg:#E1F5EE;--teal-txt:#085041;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1e1e1c;--bg2:#2a2a28;--bg3:#323230;
+  --text:#f0f0ee;--text2:#aaa;--text3:#666;
+  --border:#3a3a38;--border2:#4a4a48;
+}}
+html,body{height:100%;overflow:hidden;}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg3);color:var(--text);display:flex;flex-direction:column;}
+
+/* TOPBAR */
+.topbar{background:var(--bg);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-shrink:0;padding-top:calc(10px + env(safe-area-inset-top,0px));}
+.topbar-title{font-size:17px;font-weight:700;color:var(--text);}
+.topbar-right{display:flex;align-items:center;gap:6px;}
+.sync-status{font-size:11px;color:var(--text2);}
+
+/* BOTTOM NAV */
+.bottom-nav{background:var(--bg);border-top:1px solid var(--border);display:flex;flex-shrink:0;padding-bottom:var(--safe-bottom);}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px;cursor:pointer;border:none;background:none;color:var(--text2);font-size:10px;font-family:inherit;position:relative;gap:3px;}
+.nav-item.active{color:var(--text);}
+.nav-item .nav-icon{font-size:20px;line-height:1;}
+.nav-item .nav-label{font-size:10px;}
+.nav-badge{position:absolute;top:4px;right:calc(50% - 16px);background:#E24B4A;color:#fff;font-size:9px;font-weight:700;border-radius:999px;min-width:16px;height:16px;line-height:16px;text-align:center;padding:0 3px;}
+
+/* MAIN CONTENT */
+.main-content{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.page{display:none;height:100%;}
+.page.active{display:block;}
+
+/* LISTE PAGE */
+.list-page{padding:12px;}
+.pipeline-tabs{display:flex;overflow-x:auto;gap:0;margin-bottom:12px;background:var(--bg);border-radius:var(--radius-lg);padding:4px;border:1px solid var(--border);}
+.pipeline-tabs::-webkit-scrollbar{display:none;}
+.p-tab{padding:6px 10px;font-size:11px;white-space:nowrap;cursor:pointer;border-radius:var(--radius);border:none;background:none;color:var(--text2);font-family:inherit;}
+.p-tab.active{background:var(--text);color:var(--bg);font-weight:600;}
+.p-tab .cnt{display:inline-flex;margin-left:3px;background:rgba(128,128,128,0.2);border-radius:999px;font-size:9px;padding:0 4px;line-height:16px;}
+.p-tab.active .cnt{background:rgba(255,255,255,0.25);}
+
+/* CARDS */
+.card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:8px;overflow:hidden;}
+.card-header{display:flex;align-items:center;gap:10px;padding:12px 14px;cursor:pointer;}
+.av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;}
+.card-info{flex:1;min-width:0;}
+.card-nom{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-meta{font-size:11px;color:var(--text2);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.card-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;}
+.score{font-size:12px;font-weight:600;}
+.score-sub{font-size:10px;color:var(--text2);}
+.date-badge{font-size:10px;padding:2px 7px;border-radius:999px;font-weight:500;}
+.card-body{display:none;border-top:1px solid var(--border);padding:14px;}
+.card-body.open{display:block;}
+.sec{margin-bottom:14px;}
+.sec-title{font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;}
+.field-lbl{font-size:10px;color:var(--text2);margin-bottom:1px;}
+.field-val{font-size:12px;color:var(--text);}
+.notes-box{background:var(--bg2);border-radius:var(--radius);padding:8px 10px;font-size:12px;line-height:1.5;}
+.forecast-row{display:flex;gap:8px;flex-wrap:wrap;}
+.f-item{background:var(--bg2);border-radius:var(--radius);padding:8px 10px;flex:1;min-width:80px;text-align:center;}
+.f-num{font-size:16px;font-weight:700;}
+.f-lbl{font-size:10px;color:var(--text2);margin-top:1px;}
+.relance-box{display:flex;align-items:center;gap:10px;background:var(--bg2);border-radius:var(--radius);padding:10px 12px;}
+.hist-entry{padding:8px 0;border-bottom:1px solid var(--border);}
+.hist-entry:last-child{border-bottom:none;}
+.hist-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px;flex-wrap:wrap;gap:4px;}
+.hist-meta{display:flex;gap:6px;align-items:center;}
+.hist-date{font-size:11px;color:var(--text2);}
+.hist-moyen{padding:1px 7px;border-radius:999px;font-size:10px;background:var(--blue-bg);color:var(--blue-txt);}
+.hist-resume{font-size:12px;color:var(--text);margin-top:2px;}
+.card-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;}
+
+/* FACT */
+.fact-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px;}
+.fact-item{background:var(--bg2);border-radius:var(--radius);padding:8px 10px;flex:1;min-width:80px;text-align:center;}
+.jauge-track{height:12px;background:var(--bg2);border-radius:999px;overflow:hidden;display:flex;gap:2px;padding:2px;margin:8px 0 4px;}
+.jauge-seg{flex:1;border-radius:999px;}
+.jauge-seg.filled{background:var(--green-txt);}
+.jauge-seg.empty{background:var(--border);}
+
+/* BUTTONS */
+.btn{min-height:36px;padding:0 14px;font-size:13px;border:1px solid var(--border2);border-radius:var(--radius);cursor:pointer;background:var(--bg);color:var(--text);white-space:nowrap;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;}
+.btn:active{opacity:.7;}
+.btn-sm{min-height:30px;padding:0 10px;font-size:12px;}
+.btn-xs{min-height:24px;padding:0 8px;font-size:11px;}
+.btn-primary{background:var(--text);color:var(--bg);border-color:var(--text);}
+.btn-danger{color:var(--red-txt);border-color:#F09595;}
+.btn-full{width:100%;margin-bottom:8px;}
+.fab{position:fixed;bottom:calc(70px + var(--safe-bottom));right:16px;width:52px;height:52px;border-radius:50%;background:var(--text);color:var(--bg);border:none;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,.2);z-index:10;}
+
+/* EMPTY */
+.empty{text-align:center;padding:3rem 1rem;color:var(--text2);font-size:13px;}
+
+/* MODAL */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center;z-index:100;padding:0;}
+.modal{background:var(--bg);border-radius:20px 20px 0 0;padding:20px 20px calc(20px + var(--safe-bottom));width:100%;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:6px;}
+.modal-body{font-size:13px;color:var(--text2);margin-bottom:14px;line-height:1.5;}
+.modal-choices{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;}
+.modal-choice{padding:14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:14px;color:var(--text);background:var(--bg);text-align:left;font-family:inherit;line-height:1.4;}
+.modal-choice:active{background:var(--bg2);}
+.modal-choice.success{color:var(--green-txt);}
+.modal-choice.danger{color:var(--red-txt);}
+.modal-footer{display:flex;gap:8px;margin-top:8px;}
+
+/* PANEL (slide from bottom) */
+.panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:90;display:flex;align-items:flex-end;}
+.panel{background:var(--bg);border-radius:20px 20px 0 0;padding:20px 20px calc(20px + var(--safe-bottom));width:100%;max-height:92vh;overflow-y:auto;}
+.panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.panel-title{font-size:16px;font-weight:700;}
+
+/* FORMS */
+.form-grp{display:flex;flex-direction:column;gap:5px;margin-bottom:12px;}
+.form-lbl{font-size:12px;color:var(--text2);font-weight:500;}
+.form-grp input,.form-grp select,.form-grp textarea{font-size:16px;padding:10px 12px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);width:100%;font-family:inherit;-webkit-appearance:none;}
+.form-grp textarea{min-height:80px;resize:vertical;line-height:1.5;}
+.chk-grid{display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
+.chk-item{display:flex;align-items:center;gap:10px;font-size:14px;cursor:pointer;}
+.chk-item input{width:18px;height:18px;}
+
+/* TODO PAGE */
+.todo-inner{padding:12px;}
+.todo-cols{display:flex;flex-direction:column;gap:10px;}
+.todo-col{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+.todo-col-hdr{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;}
+.todo-col-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;flex:1;}
+.todo-col-count{font-size:11px;color:var(--text2);}
+.todo-col-body{padding:8px;}
+.todo-item{display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:var(--radius);margin-bottom:6px;border-left:3px solid var(--border2);}
+.todo-item.urgent{border-left-color:#E24B4A;background:var(--red-bg);}
+.todo-item.bientot{border-left-color:#BA7517;background:var(--amber-bg);}
+.todo-item.ok{border-left-color:var(--border2);background:var(--bg2);}
+.todo-check{width:18px;height:18px;cursor:pointer;flex-shrink:0;margin-top:2px;}
+.todo-content{flex:1;min-width:0;}
+.todo-client{font-size:13px;font-weight:600;}
+.todo-desc{font-size:12px;color:var(--text2);margin-top:2px;}
+.todo-date{font-size:11px;color:var(--text3);margin-top:2px;}
+.todo-add-box{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:12px;}
+.todo-more{display:flex;justify-content:center;padding:4px 0 8px;}
+
+/* FACTURATION PAGE */
+.fact-inner{padding:12px;}
+.fact-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px;margin-bottom:10px;}
+.fact-card-name{font-size:14px;font-weight:700;margin-bottom:2px;}
+.fact-card-sub{font-size:12px;color:var(--text2);margin-bottom:10px;}
+
+/* SYNC */
+.sync-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:200;color:#fff;gap:12px;}
+.sync-overlay .spin{font-size:32px;animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.login-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:32px;text-align:center;gap:16px;}
+.login-title{font-size:24px;font-weight:700;}
+.login-sub{font-size:14px;color:var(--text2);line-height:1.5;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">CRM SeLabs</div>
+  <div class="topbar-right">
+    <span class="sync-status" id="sync-status">&#8635;</span>
+    <button class="btn btn-sm" onclick="syncDrive()" id="sync-btn" style="display:none;">Sync</button>
+    <button class="btn btn-sm btn-primary" onclick="deconnexion()" id="btn-logout" style="display:none;">&#x2715;</button>
+  </div>
+</div>
+
+<div class="main-content">
+  <!-- LOGIN -->
+  <div class="page active" id="page-login">
+    <div class="login-screen">
+      <div style="font-size:48px;">&#128196;</div>
+      <div class="login-title">CRM SeLabs</div>
+      <div class="login-sub">Connecte-toi avec ton compte Google pour acceder a tes donnees synchronisees sur tous tes appareils.</div>
+      <button class="btn btn-primary" style="min-height:48px;font-size:15px;padding:0 28px;" onclick="connexionGoogle()">Se connecter avec Google</button>
+      <div style="font-size:11px;color:var(--text3);">Tes donnees sont stockees dans ton Google Drive personnel.</div>
+    </div>
+  </div>
+
+  <!-- DOSSIERS -->
+  <div class="page" id="page-dossiers">
+    <div class="list-page">
+      <div class="pipeline-tabs" id="pipeline-tabs"></div>
+      <div id="list-view"></div>
+    </div>
+    <button class="fab" onclick="ouvrirNouveauDossier()">+</button>
+  </div>
+
+  <!-- A FAIRE -->
+  <div class="page" id="page-todo">
+    <div class="todo-inner" id="todo-inner"></div>
+  </div>
+
+  <!-- FACTURATION -->
+  <div class="page" id="page-fact">
+    <div class="fact-inner" id="fact-inner"></div>
+  </div>
+</div>
+
+<div class="bottom-nav" id="bottom-nav" style="display:none;">
+  <button class="nav-item active" id="nav-dossiers" onclick="showPage('dossiers')">
+    <span class="nav-icon">&#128196;</span>
+    <span class="nav-label">Dossiers</span>
+  </button>
+  <button class="nav-item" id="nav-todo" onclick="showPage('todo')">
+    <span class="nav-icon">&#9745;</span>
+    <span class="nav-label">A faire</span>
+    <span class="nav-badge" id="badge-retard" style="display:none;">0</span>
+  </button>
+  <button class="nav-item" id="nav-fact" onclick="showPage('fact')">
+    <span class="nav-icon">&#128176;</span>
+    <span class="nav-label">Facturation</span>
+  </button>
+</div>
+
+<div id="modal-zone"></div>
+<div id="panel-zone"></div>
+
+<script src="https://accounts.google.com/gsi/client" async></script>
+<script>
+var CLIENT_ID = "1084234356127-8ea4ng3ta197t6180coh3hbhvq99jrsa.apps.googleusercontent.com";
+var SCOPES = "https://www.googleapis.com/auth/drive.appdata";
+var FILE_NAME = "crm_selabs_data.json";
+var accessToken = null;
+var fileId = null;
+var syncTimer = null;
+
+var PRODUITS = ["Grammateus","Lictor","Aquila","Talentium","Delegation","Formation"];
+var MOYENS = ["Appel telephonique","E-mail","Visioconference","Reunion en presentiel","LinkedIn","Autre"];
+var PRIX_DC = 100; var PRIX_OP = 50;
+var ETAPES = [
+  {id:"introduction",label:"Intro",pct:10},{id:"demo",label:"Demo",pct:30},
+  {id:"demo_faite",label:"Demo faite",pct:30},{id:"poc_prevu",label:"POC prevu",pct:50},
+  {id:"poc_en_cours",label:"POC en cours",pct:50},{id:"negociation",label:"Nego",pct:70},
+  {id:"closing",label:"Closing",pct:90},{id:"closed_won",label:"Won",pct:100},
+  {id:"closed_lost",label:"Lost",pct:0}
+];
+var LISTES = [
+  {id:"introduction",label:"A contacter"},{id:"demo",label:"Demo prevue"},
+  {id:"demo_faite",label:"Demo faite"},{id:"poc_prevu",label:"POC prevu"},
+  {id:"poc_en_cours",label:"POC en cours"},{id:"negociation",label:"Negociation"},
+  {id:"closing",label:"Closing"},{id:"closed_won",label:"Closed Won"},
+  {id:"closed_lost",label:"Closed Lost"}
+];
+var AV_COLORS=[{bg:"#E6F1FB",c:"#0C447C"},{bg:"#FAEEDA",c:"#633806"},{bg:"#EAF3DE",c:"#27500A"},{bg:"#EEEDFE",c:"#3C3489"},{bg:"#FBEAF0",c:"#72243E"},{bg:"#E1F5EE",c:"#085041"}];
+
+var dossiers=[]; var nextId=1; var tachesLibres=[]; var nextTacheId=1;
+var currentListe="introduction"; var openCards={}; var todoLimites={urgent:5,bientot:5,ok:5};
+var _tache=null; var _dirty=false;
+
+// ── UTILITAIRES ──
+function esc(s){var t=String(s||"");t=t.replace(/&/g,"&amp;");t=t.replace(/</g,"&lt;");t=t.replace(/>/g,"&gt;");return t;}
+function today(){return new Date().toISOString().slice(0,10);}
+function addDays(s,n){var d=new Date(s);d.setDate(d.getDate()+n);return d.toISOString().slice(0,10);}
+function fmtDate(s){if(!s)return"—";var d=new Date(s+"T12:00:00");return d.toLocaleDateString("fr-FR",{day:"2-digit",month:"short",year:"numeric"});}
+function diffDays(s){return Math.ceil((new Date(s)-new Date(today()))/86400000);}
+function initiales(p,n){return((p||"")[0]+(n||"")[0]).toUpperCase();}
+function avColor(nom){var h=0;for(var i=0;i<nom.length;i++)h+=nom.charCodeAt(i);return AV_COLORS[h%AV_COLORS.length];}
+function etapeInfo(id){for(var i=0;i<ETAPES.length;i++){if(ETAPES[i].id===id)return ETAPES[i];}return ETAPES[0];}
+function listeInfo(id){for(var i=0;i<LISTES.length;i++){if(LISTES[i].id===id)return LISTES[i];}return LISTES[0];}
+function prixU(d){return d.type_installation==="On-prem"?PRIX_OP:PRIX_DC;}
+function scoreClosing(d){return Math.round((parseInt(d.forecast_licences)||0)*prixU(d)*12*(etapeInfo(d.etape).pct/100));}
+function getDossiers(lid){return dossiers.filter(function(d){return d.etape===lid;});}
+function urgLabel(diff){if(diff<0)return"En retard "+Math.abs(diff)+"j";if(diff===0)return"Auj.";if(diff===1)return"Demain";return"Dans "+diff+"j";}
+function moisEntre(a,b){var d=a.split("-"),f=b.split("-");return(parseInt(f[0])-parseInt(d[0]))*12+(parseInt(f[1])-parseInt(d[1]));}
+function moisCourant(){var n=new Date();return n.getFullYear()+"-"+(n.getMonth()+1).toString().padStart(2,"0");}
+function calcFact(d){
+  if(!d.fact_debut||!d.fact_montant)return null;
+  var nb=moisEntre(d.fact_debut,moisCourant())+1;
+  if(nb<1)nb=0;
+  var nbC=Math.min(nb,12);
+  return{nb:nb,nbC:nbC,montantFacture:nb*d.fact_montant,commission:nbC*d.fact_montant*0.20,jauge:Math.min(nb,12)};
+}
+function nomMois(mm){return["Janvier","Fevrier","Mars","Avril","Mai","Juin","Juillet","Aout","Septembre","Octobre","Novembre","Decembre"][parseInt(mm)-1]||mm;}
+function labelDebutFact(s){if(!s)return"";var p=s.split("-");return nomMois(p[1])+" "+p[0];}
+
+// ── GOOGLE AUTH ──
+function connexionGoogle(){
+  var client=google.accounts.oauth2.initTokenClient({
+    client_id:CLIENT_ID, scope:SCOPES,
+    callback:function(resp){
+      if(resp.error){setSyncStatus("Erreur connexion");return;}
+      accessToken=resp.access_token;
+      document.getElementById("btn-logout").style.display="flex";
+      document.getElementById("sync-btn").style.display="flex";
+      setSyncStatus("Connecte");
+      chargerDepuisDrive();
+    }
+  });
+  client.requestAccessToken();
+}
+function deconnexion(){
+  if(!confirm("Se deconnecter ?"))return;
+  accessToken=null;fileId=null;
+  document.getElementById("btn-logout").style.display="none";
+  document.getElementById("sync-btn").style.display="none";
+  document.getElementById("bottom-nav").style.display="none";
+  showOnlyPage("login");
+  setSyncStatus("");
+}
+function setSyncStatus(msg){document.getElementById("sync-status").textContent=msg;}
+
+// ── GOOGLE DRIVE ──
+function chargerDepuisDrive(){
+  setSyncStatus("Chargement...");
+  fetch("https://www.googleapis.com/drive/v3/files?spaces=appDataFolder&fields=files(id,name)&q=name%3D%27"+FILE_NAME+"%27",{headers:{Authorization:"Bearer "+accessToken}})
+  .then(function(r){return r.json();})
+  .then(function(data){
+    if(data.files&&data.files.length>0){
+      fileId=data.files[0].id;
+      return fetch("https://www.googleapis.com/drive/v3/files/"+fileId+"?alt=media",{headers:{Authorization:"Bearer "+accessToken}});
+    } else {return null;}
+  })
+  .then(function(r){if(r)return r.json();return null;})
+  .then(function(data){
+    if(data){
+      dossiers=data.dossiers||[];
+      nextId=data.nextId||(dossiers.length?Math.max.apply(null,dossiers.map(function(d){return d.id;}))+1:1);
+      tachesLibres=data.tachesLibres||[];
+      nextTacheId=tachesLibres.length?Math.max.apply(null,tachesLibres.map(function(t){return t.id;}))+1:1;
+    }
+    setSyncStatus("A jour");
+    document.getElementById("bottom-nav").style.display="flex";
+    showOnlyPage("dossiers");
+    renderList();
+    renderTodo();
+    renderFact();
+    majBadge();
+  })
+  .catch(function(e){setSyncStatus("Erreur");console.error(e);});
+}
+function sauvegarderSurDrive(){
+  if(!accessToken)return;
+  var payload=JSON.stringify({dossiers:dossiers,nextId:nextId,tachesLibres:tachesLibres,exported:new Date().toISOString()});
+  var boundary="crm_boundary_xyz";
+  var meta=JSON.stringify({name:FILE_NAME,parents:["appDataFolder"]});
+  var body="--"+boundary+"\r\nContent-Type: application/json\r\n\r\n"+meta+"\r\n--"+boundary+"\r\nContent-Type: application/json\r\n\r\n"+payload+"\r\n--"+boundary+"--";
+  var method=fileId?"PATCH":"POST";
+  var url=fileId
+    ?"https://www.googleapis.com/upload/drive/v3/files/"+fileId+"?uploadType=multipart"
+    :"https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart";
+  setSyncStatus("Sauvegarde...");
+  fetch(url,{method:method,headers:{Authorization:"Bearer "+accessToken,"Content-Type":"multipart/related; boundary="+boundary},body:body})
+  .then(function(r){return r.json();})
+  .then(function(data){if(data.id)fileId=data.id;setSyncStatus("A jour &#10003;");_dirty=false;})
+  .catch(function(e){setSyncStatus("Erreur sync");});
+}
+function saveData(){_dirty=true;planifierSync();}
+function saveTaches(){_dirty=true;planifierSync();}
+function planifierSync(){if(syncTimer)clearTimeout(syncTimer);syncTimer=setTimeout(sauvegarderSurDrive,2000);}
+function syncDrive(){chargerDepuisDrive();}
+
+// ── NAVIGATION ──
+function showPage(id){
+  document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active");});
+  document.getElementById("page-"+id).classList.add("active");
+  document.querySelectorAll(".nav-item").forEach(function(n){n.classList.remove("active");});
+  document.getElementById("nav-"+id).classList.add("active");
+  if(id==="todo")renderTodo();
+  if(id==="fact")renderFact();
+  if(id==="dossiers")renderList();
+}
+function showOnlyPage(id){
+  document.querySelectorAll(".page").forEach(function(p){p.classList.remove("active");});
+  document.getElementById("page-"+id).classList.add("active");
+}
+
+// ── MODALS / PANELS ──
+function showModal(html){document.getElementById("modal-zone").innerHTML="<div class='modal-backdrop' onclick='if(event.target===this)closeModal()'>"+html+"</div>";}
+function closeModal(){document.getElementById("modal-zone").innerHTML="";}
+function showPanel(html){document.getElementById("panel-zone").innerHTML=html;}
+function closePanel(){document.getElementById("panel-zone").innerHTML="";}
+
+// ── RENDU LISTE ──
+function renderList(){
+  var html="<div class='pipeline-tabs'>";
+  LISTES.forEach(function(l){
+    var cnt=getDossiers(l.id).length;
+    html+="<button class='p-tab"+(currentListe===l.id?" active":"")+"' onclick='switchListe(\""+l.id+"\")'>"
+      +esc(l.label)+"<span class='cnt'>"+cnt+"</span></button>";
+  });
+  html+="</div>";
+  document.getElementById("pipeline-tabs").innerHTML=html.replace("<div class='pipeline-tabs'>","").replace("</div>","");
+  // Rebuild tabs directly
+  var tabsEl=document.getElementById("pipeline-tabs");
+  tabsEl.innerHTML="";
+  LISTES.forEach(function(l){
+    var cnt=getDossiers(l.id).length;
+    var btn=document.createElement("button");
+    btn.className="p-tab"+(currentListe===l.id?" active":"");
+    btn.innerHTML=esc(l.label)+"<span class='cnt'>"+cnt+"</span>";
+    btn.onclick=(function(lid){return function(){switchListe(lid);};})(l.id);
+    tabsEl.appendChild(btn);
+  });
+  var dos=getDossiers(currentListe);
+  var lv=document.getElementById("list-view");
+  if(!dos.length){lv.innerHTML="<div class='empty'>Aucun dossier.</div>";return;}
+  var html2="";
+  dos.forEach(function(d){
+    var av=avColor(d.nom||"");
+    var score=scoreClosing(d);
+    var ei=etapeInfo(d.etape);
+    var isOpen=openCards[d.id];
+    var dateBadge="";
+    if(d.etape==="demo"&&d.date_etape) dateBadge="<span class='date-badge' style='background:var(--amber-bg);color:var(--amber-txt);'>"+fmtDate(d.date_etape)+"</span>";
+    if(d.etape==="poc_prevu"&&d.date_poc) dateBadge="<span class='date-badge' style='background:var(--purple-bg);color:var(--purple-txt);'>"+fmtDate(d.date_poc)+"</span>";
+    html2+="<div class='card'>";
+    html2+="<div class='card-header' onclick='toggleCard("+d.id+")'>";
+    html2+="<div class='av' style='background:"+av.bg+";color:"+av.c+"'>"+initiales(d.prenom,d.nom)+"</div>";
+    html2+="<div class='card-info'><div class='card-nom'>"+esc(d.prenom)+" "+esc(d.nom)+"</div><div class='card-meta'>"+esc(d.entreprise)+(d.poste?" · "+esc(d.poste):"")+"</div></div>";
+    html2+="<div class='card-right'>"+dateBadge+"<span class='score'>"+score.toLocaleString("fr-CH")+" CHF</span><span class='score-sub'>"+ei.pct+"%</span></div>";
+    html2+="</div>";
+    html2+="<div class='card-body"+(isOpen?" open":"")+"'>"+renderCardBody(d)+"</div>";
+    html2+="</div>";
+  });
+  lv.innerHTML=html2;
+}
+
+function renderCardBody(d){
+  var html="";
+  // Facturation en tete si closed_won
+  if(d.etape==="closed_won"){
+    if(d.fact_type==="unique"&&d.fact_montant_unique){
+      var cu=d.fact_montant_unique*0.20;
+      html+="<div class='sec'><div class='sec-title'>Facture a ce jour <button class='btn btn-xs' onclick='editFacturationUnique("+d.id+")'>Modifier</button></div>";
+      html+="<div class='fact-row'><div class='fact-item'><div class='f-num'>"+d.fact_montant_unique.toLocaleString("fr-CH")+" CHF</div><div class='f-lbl'>Montant</div></div>";
+      html+="<div class='fact-item'><div class='f-num'>"+cu.toLocaleString("fr-CH")+" CHF</div><div class='f-lbl'>Commission</div></div></div></div>";
+    } else if(d.fact_debut&&d.fact_montant){
+      var f=calcFact(d);
+      if(f){
+        var segs="";
+        for(var i=0;i<12;i++) segs+="<div class='jauge-seg "+(i<f.jauge?"filled":"empty")+"'></div>";
+        html+="<div class='sec'><div class='sec-title'>Facture a ce jour <button class='btn btn-xs' onclick='editFacturation("+d.id+")'>Modifier</button></div>";
+        html+="<div class='fact-row'>";
+        html+="<div class='fact-item'><div class='f-num'>"+f.montantFacture.toLocaleString("fr-CH")+"</div><div class='f-lbl'>Facture CHF</div></div>";
+        html+="<div class='fact-item'><div class='f-num'>"+d.fact_montant.toLocaleString("fr-CH")+"</div><div class='f-lbl'>Mensualite</div></div>";
+        html+="<div class='fact-item'><div class='f-num'>"+f.commission.toLocaleString("fr-CH")+"</div><div class='f-lbl'>Commission</div></div>";
+        html+="</div>";
+        html+="<div class='jauge-track'>"+segs+"</div>";
+        html+="<div style='font-size:11px;color:var(--text2);'>"+f.jauge+"/12 mois depuis "+labelDebutFact(d.fact_debut)+"</div></div>";
+      }
+    } else {
+      html+="<div class='sec'><div class='sec-title'>Facturation</div><button class='btn btn-sm' onclick='popupChoixFacturation("+d.id+")'>+ Ajouter facturation</button></div>";
+    }
+  }
+  // Infos contact
+  html+="<div class='sec'><div class='sec-title'>Contact</div><div class='field-grid'>";
+  html+="<div><div class='field-lbl'>Email</div><div class='field-val'>"+(d.email?esc(d.email):"—")+"</div></div>";
+  html+="<div><div class='field-lbl'>Tel. mobile</div><div class='field-val'>"+esc(d.tel_mobile||"—")+"</div></div>";
+  html+="<div><div class='field-lbl'>Secteur</div><div class='field-val'>"+esc(d.secteur||"—")+"</div></div>";
+  html+="<div><div class='field-lbl'>Produit(s)</div><div class='field-val'>"+(d.produits&&d.produits.length?d.produits.map(esc).join(", "):"—")+"</div></div>";
+  html+="</div></div>";
+  // Forecast
+  var score=scoreClosing(d);
+  var pct=etapeInfo(d.etape).pct;
+  html+="<div class='sec'><div class='sec-title'>Forecast</div><div class='fact-row'>";
+  html+="<div class='fact-item'><div class='f-num'>"+pct+"%</div><div class='f-lbl'>Probabilite</div></div>";
+  html+="<div class='fact-item'><div class='f-num'>"+(d.forecast_licences||0)+"</div><div class='f-lbl'>Licences</div></div>";
+  html+="<div class='fact-item'><div class='f-num'>"+score.toLocaleString("fr-CH")+"</div><div class='f-lbl'>Score CHF</div></div>";
+  html+="</div></div>";
+  // Prochaine relance
+  var relance=getRelance(d);
+  html+="<div class='sec'><div class='sec-title'>Prochaine relance <button class='btn btn-xs' onclick='editRelanceManuelle("+d.id+")'>Modifier</button></div>";
+  if(relance){
+    var diff=diffDays(relance.date);
+    var col=diff<0?"var(--red-txt)":diff<=3?"var(--amber-txt)":"var(--text)";
+    html+="<div class='relance-box'><div style='font-size:18px;font-weight:700;color:"+col+";'>"+fmtDate(relance.date)+"</div><div style='font-size:12px;flex:1;'>"+esc(relance.sujet)+"</div></div>";
+  } else { html+="<div style='font-size:12px;color:var(--text2);'>Aucune relance.</div>"; }
+  html+="</div>";
+  // Notes
+  if(d.notes) html+="<div class='sec'><div class='sec-title'>Notes</div><div class='notes-box'>"+esc(d.notes).replace(/\n/g,"<br>")+"</div></div>";
+  if(d.motif_perdu) html+="<div class='sec'><div class='sec-title'>Motif de perte</div><div class='notes-box' style='background:var(--red-bg);color:var(--red-txt);'>"+esc(d.motif_perdu)+"</div></div>";
+  // Historique
+  if(d.historique&&d.historique.length){
+    html+="<div class='sec'><div class='sec-title'>Historique ("+d.historique.length+")</div>";
+    d.historique.map(function(h,i){return{h:h,i:i};}).reverse().forEach(function(x){
+      html+="<div class='hist-entry'><div class='hist-top'><div class='hist-meta'><span class='hist-date'>"+fmtDate(x.h.date)+"</span><span class='hist-moyen'>"+esc(x.h.moyen)+"</span></div>";
+      html+="<div style='display:flex;gap:4px;'><button class='btn btn-xs' onclick='modifEchange("+d.id+","+x.i+")'>Modif.</button><button class='btn btn-xs btn-danger' onclick='supprimerEchange("+d.id+","+x.i+")'>Suppr.</button></div></div>";
+      html+="<div class='hist-resume'>"+esc(x.h.resume).replace(/\n/g,"<br>")+"</div></div>";
+    });
+    html+="</div>";
+  }
+  // Actions
+  html+="<div class='card-actions'>";
+  html+="<button class='btn btn-sm' onclick='ouvrirEdition("+d.id+")'>Modifier</button>";
+  html+="<button class='btn btn-sm' onclick='ajouterEchange("+d.id+")'>+ Echange</button>";
+  if(d.etape==="introduction") html+="<button class='btn btn-sm btn-primary' onclick='popupEtape1("+d.id+")'>Avancer</button>";
+  if(d.etape==="demo") html+="<button class='btn btn-sm btn-primary' onclick='popupEtape2("+d.id+")'>Resultat demo</button>";
+  if(d.etape==="demo_faite") html+="<button class='btn btn-sm btn-primary' onclick='programmerPOC("+d.id+")'>Programmer POC</button>";
+  if(d.etape==="poc_prevu"||d.etape==="poc_en_cours") html+="<button class='btn btn-sm btn-primary' onclick='popupEtape3("+d.id+")'>Resultat POC</button>";
+  if(d.etape==="negociation") html+="<button class='btn btn-sm btn-primary' onclick='popupEtape4("+d.id+")'>Resultat nego</button>";
+  if(d.etape==="closing") html+="<button class='btn btn-sm btn-primary' onclick='popupEtape5("+d.id+")'>Cloturer</button>";
+  html+="<button class='btn btn-sm btn-danger' onclick='supprimerDossier("+d.id+")'>Supprimer</button>";
+  html+="</div>";
+  return html;
+}
+
+function toggleCard(id){if(openCards[id])delete openCards[id];else openCards[id]=true;renderList();}
+function switchListe(id){currentListe=id;renderList();}
+
+// ── RELANCES ──
+function getRelanceAuto(d){
+  var t=today();
+  if(d.etape==="introduction"&&d.date_relance)return{date:d.date_relance,sujet:"Relance client"};
+  if(d.etape==="demo"&&d.date_etape){var jm2=addDays(d.date_etape,-2);return{date:jm2<t?d.date_etape:jm2,sujet:"Demo prevue"};}
+  if(d.etape==="demo_faite"&&d.date_demo_faite){var j=Math.floor((new Date(t)-new Date(d.date_demo_faite))/86400000);return{date:addDays(d.date_demo_faite,(Math.floor(j/7)+1)*7),sujet:"Programmer POC"};}
+  if(d.etape==="poc_prevu"&&d.date_poc)return{date:d.date_poc,sujet:"Debut POC"};
+  if(d.etape==="poc_en_cours"&&d.date_poc){var fin=d.date_poc_fin||addDays(d.date_poc,30);return{date:fin,sujet:"Fin POC"};}
+  if(d.etape==="negociation"&&d.date_etape)return{date:addDays(d.date_etape,7),sujet:"Suivi nego J+7"};
+  if(d.etape==="closing")return{date:today(),sujet:"Closing a finaliser"};
+  return null;
+}
+function getRelance(d){
+  if(d.relance_manuelle_date&&d.relance_manuelle_date>=today())return{date:d.relance_manuelle_date,sujet:d.relance_manuelle_sujet||"Relance",source:"manuelle"};
+  var a=getRelanceAuto(d);return a?{date:a.date,sujet:a.sujet,source:"auto"}:null;
+}
+function editRelanceManuelle(id){
+  var d=dossiers.filter(function(x){return x.id===id;})[0];
+  showModal("<div class='modal'><div class='modal-title'>Prochaine relance</div>"
+    +"<div class='form-grp'><div class='form-lbl'>Date</div><input type='date' id='rel-man-date' value='"+(d.relance_manuelle_date||"")+"'></div>"
+    +"<div class='form-grp'><div class='form-lbl'>Sujet</div><input type='text' id='rel-man-sujet' value='"+esc(d.relance_manuelle_sujet||"")+"'></div>"
+    +"<div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerRelanceManuelle("+id+")'>OK</button></div></div>");
+}
+function confirmerRelanceManuelle(id){
+  var d=dossiers.filter(function(x){return x.id===id;})[0];
+  d.relance_manuelle_date=document.getElementById("rel-man-date").value;
+  d.relance_manuelle_sujet=document.getElementById("rel-man-sujet").value.trim();
+  saveData();closeModal();renderList();
+}
+
+// ── ETAPES ──
+function popupEtape1(id){
+  var d=dossiers.filter(function(x){return x.id===id;})[0];
+  showModal("<div class='modal'><div class='modal-title'>Introduction</div><div class='modal-body'>"+esc(d.prenom)+" "+esc(d.nom)+"</div><div class='modal-choices'><button class='modal-choice' onclick='etape1Discussion("+id+")'>Programmer une relance</button><button class='modal-choice' onclick='etape1Demo("+id+")'>Demo prevue</button><button class='modal-choice danger' onclick='demanderMotif("+id+")'>Perdu</button></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button></div></div>");
+}
+function etape1Discussion(id){closeModal();showModal("<div class='modal'><div class='modal-title'>Date de relance</div><div class='form-grp'><div class='form-lbl'>Date</div><input type='date' id='rel-date'></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerRelance("+id+")'>OK</button></div></div>");}
+function confirmerRelance(id){var v=document.getElementById("rel-date").value;if(!v){alert("Date requise");return;}var d=dossiers.filter(function(x){return x.id===id;})[0];d.date_relance=v;saveData();closeModal();renderList();}
+function etape1Demo(id){closeModal();showModal("<div class='modal'><div class='modal-title'>Date de la demo</div><div class='form-grp'><div class='form-lbl'>Date</div><input type='date' id='demo-date'></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerDemo("+id+")'>OK</button></div></div>");}
+function confirmerDemo(id){var v=document.getElementById("demo-date").value;if(!v){alert("Date requise");return;}var d=dossiers.filter(function(x){return x.id===id;})[0];d.etape="demo";d.date_etape=v;d.date_relance=null;saveData();closeModal();currentListe="demo";renderList();}
+function popupEtape2(id){var d=dossiers.filter(function(x){return x.id===id;})[0];showModal("<div class='modal'><div class='modal-title'>Resultat demo</div><div class='modal-body'>"+esc(d.prenom)+" "+esc(d.nom)+"</div><div class='modal-choices'><button class='modal-choice' onclick='etape2POC("+id+")'>POC prevu</button><button class='modal-choice danger' onclick='demanderMotif("+id+")'>Perdu</button></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button></div></div>");}
+function etape2POC(id){closeModal();showModal("<div class='modal'><div class='modal-title'>Date debut POC</div><div class='form-grp'><div class='form-lbl'>Date de debut</div><input type='date' id='poc-date'></div><div style='display:flex;align-items:center;gap:8px;margin:8px 0;'><input type='checkbox' id='poc-plus-tard' style='width:18px;height:18px;'><label for='poc-plus-tard' style='font-size:14px;'>A programmer plus tard</label></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerDebutPOC("+id+")'>OK</button></div></div>");}
+function confirmerDebutPOC(id){var plusTard=document.getElementById("poc-plus-tard").checked;var d=dossiers.filter(function(x){return x.id===id;})[0];if(plusTard){d.etape="demo_faite";d.date_demo_faite=today();d.date_poc=null;saveData();closeModal();currentListe="demo_faite";renderList();return;}var v=document.getElementById("poc-date").value;if(!v){alert("Date requise");return;}closeModal();popupDureePOC(id,v);}
+function popupDureePOC(id,dateDebut){showModal("<div class='modal'><div class='modal-title'>Duree du POC</div><div class='modal-body'>Debut le "+fmtDate(dateDebut)+"</div><div class='modal-choices'><label style='display:flex;align-items:center;gap:10px;font-size:14px;padding:12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;'><input type='radio' name='poc-dur' id='poc-std' value='std' checked style='width:18px;height:18px;'>Duree standard (30 jours)</label><label style='display:flex;align-items:center;gap:10px;font-size:14px;padding:12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;'><input type='radio' name='poc-dur' id='poc-libre' value='libre' style='width:18px;height:18px;' onchange='toggleFinPOC()'>Duree libre</label></div><div id='poc-fin-bloc' style='display:none;'><div class='form-grp'><div class='form-lbl'>Date de fin</div><input type='date' id='poc-fin-date'></div></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerDureePOC("+id+",\""+dateDebut+"\")'>OK</button></div></div>");}
+function toggleFinPOC(){var l=document.getElementById("poc-libre").checked;var b=document.getElementById("poc-fin-bloc");if(b)b.style.display=l?"block":"none";}
+function confirmerDureePOC(id,dateDebut){var libre=document.getElementById("poc-libre").checked;var d=dossiers.filter(function(x){return x.id===id;})[0];d.date_poc=dateDebut;d.date_poc_fin=libre?(document.getElementById("poc-fin-date").value||addDays(dateDebut,30)):addDays(dateDebut,30);d.etape=(dateDebut<=today())?"poc_en_cours":"poc_prevu";saveData();closeModal();currentListe=d.etape;renderList();}
+function programmerPOC(id){showModal("<div class='modal'><div class='modal-title'>Programmer le POC</div><div class='form-grp'><div class='form-lbl'>Date de debut</div><input type='date' id='poc-date2'></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerPOC2("+id+")'>OK</button></div></div>");}
+function confirmerPOC2(id){var v=document.getElementById("poc-date2").value;if(!v){alert("Date requise");return;}closeModal();popupDureePOC(id,v);}
+function popupEtape3(id){var d=dossiers.filter(function(x){return x.id===id;})[0];showModal("<div class='modal'><div class='modal-title'>Resultat POC</div><div class='modal-body'>"+esc(d.prenom)+" "+esc(d.nom)+"</div><div class='modal-choices'><button class='modal-choice' onclick='etape3Termine("+id+")'>POC termine — Negociation</button><button class='modal-choice' onclick='etape3Prolonge("+id+")'>Prolonger le POC</button></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button></div></div>");}
+function etape3Termine(id){var d=dossiers.filter(function(x){return x.id===id;})[0];d.etape="negociation";d.date_etape=today();saveData();closeModal();currentListe="negociation";renderList();}
+function etape3Prolonge(id){closeModal();showModal("<div class='modal'><div class='modal-title'>Prolonger le POC</div><div class='form-grp'><div class='form-lbl'>Jours supplementaires</div><input type='number' id='poc-extra' min='1' placeholder='ex. 15'></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerProlongPOC("+id+")'>OK</button></div></div>");}
+function confirmerProlongPOC(id){var extra=parseInt(document.getElementById("poc-extra").value)||0;if(extra<1){alert("Nombre invalide");return;}var d=dossiers.filter(function(x){return x.id===id;})[0];d.date_poc=today();d.date_poc_fin=addDays(today(),extra);d.etape="poc_en_cours";saveData();closeModal();renderList();}
+function popupEtape4(id){var d=dossiers.filter(function(x){return x.id===id;})[0];showModal("<div class='modal'><div class='modal-title'>Resultat negociation</div><div class='modal-body'>"+esc(d.prenom)+" "+esc(d.nom)+"</div><div class='modal-choices'><button class='modal-choice' onclick='etape4Terminee("+id+")'>Negociation terminee — Closing</button><button class='modal-choice' onclick='etape4EnCours("+id+")'>En cours — reporter J+7</button></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button></div></div>");}
+function etape4Terminee(id){var d=dossiers.filter(function(x){return x.id===id;})[0];d.etape="closing";d.date_etape=today();saveData();closeModal();currentListe="closing";renderList();}
+function etape4EnCours(id){var d=dossiers.filter(function(x){return x.id===id;})[0];d.date_etape=addDays(today(),7);saveData();closeModal();renderList();}
+function popupEtape5(id){var d=dossiers.filter(function(x){return x.id===id;})[0];showModal("<div class='modal'><div class='modal-title'>Closing final</div><div class='modal-body'>"+esc(d.prenom)+" "+esc(d.nom)+"</div><div class='modal-choices'><button class='modal-choice success' onclick='etape5Gagne("+id+")'>Gagne</button><button class='modal-choice danger' onclick='demanderMotif("+id+")'>Perdu</button></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button></div></div>");}
+function etape5Gagne(id){var d=dossiers.filter(function(x){return x.id===id;})[0];d.etape="closed_won";saveData();closeModal();currentListe="closed_won";renderList();setTimeout(function(){popupChoixFacturation(id);},300);}
+function demanderMotif(id){showModal("<div class='modal'><div class='modal-title'>Motif de perte</div><div class='form-grp'><div class='form-lbl'>Raison</div><textarea id='motif-txt' placeholder='Raison du refus...'></textarea></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerPerdu("+id+")'>OK</button></div></div>");}
+function confirmerPerdu(id){var motif=document.getElementById("motif-txt").value.trim();var d=dossiers.filter(function(x){return x.id===id;})[0];d.etape="closed_lost";d.motif_perdu=motif;if(motif)d.notes=(d.notes?d.notes+"\n\nMotif: ":"")+motif;saveData();closeModal();currentListe="closed_lost";renderList();}
+function supprimerDossier(id){if(!confirm("Supprimer ?"))return;dossiers=dossiers.filter(function(x){return x.id!==id;});delete openCards[id];saveData();renderList();}
+
+// ── FACTURATION ──
+function popupChoixFacturation(id){
+  var d=dossiers.filter(function(x){return x.id===id;})[0];
+  showModal("<div class='modal'><div class='modal-title'>Type de facturation</div><div class='modal-body'>"+esc(d.prenom)+" "+esc(d.nom)+"</div><div class='modal-choices'><button class='modal-choice' onclick='popupFacturation("+id+")'>Facturation mensuelle<br><span style=\"font-size:11px;color:var(--text2);\">Mensualite recurrente, jauge et commission sur 12 mois</span></button><button class='modal-choice' onclick='popupFacturationUnique("+id+")'>Facturation unique<br><span style=\"font-size:11px;color:var(--text2);\">Montant fixe, commission 20% immediate</span></button></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Passer</button></div></div>");
+}
+function popupFacturation(id){
+  closeModal();
+  var now=new Date();
+  var moisDef=(now.getMonth()+1).toString().padStart(2,"0");
+  var anneeDef=now.getFullYear().toString();
+  showModal("<div class='modal'><div class='modal-title'>Facturation mensuelle</div>"
+    +"<div class='form-grp'><div class='form-lbl'>Mois de premiere facturation</div>"
+    +"<div style='display:flex;gap:8px;'>"
+    +"<select id='fact-mois' style='flex:1;font-size:16px;padding:10px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);'>"
+    +"<option value='01'>Janvier</option><option value='02'>Fevrier</option><option value='03'>Mars</option><option value='04'>Avril</option><option value='05'>Mai</option><option value='06'>Juin</option><option value='07'>Juillet</option><option value='08'>Aout</option><option value='09'>Septembre</option><option value='10'>Octobre</option><option value='11'>Novembre</option><option value='12'>Decembre</option>"
+    +"</select>"
+    +"<input type='number' id='fact-annee' value='"+anneeDef+"' min='2020' max='2099' style='width:90px;font-size:16px;padding:10px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);'>"
+    +"</div></div>"
+    +"<div class='form-grp'><div class='form-lbl'>Montant mensuel (CHF)</div><input type='number' id='fact-montant' min='0' placeholder='ex. 500'></div>"
+    +"<div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerFacturation("+id+")'>Enregistrer</button></div></div>");
+  setTimeout(function(){document.getElementById("fact-mois").value=moisDef;},50);
+}
+function confirmerFacturation(id){
+  var mois=document.getElementById("fact-mois").value;
+  var annee=document.getElementById("fact-annee").value;
+  var montant=parseFloat(document.getElementById("fact-montant").value)||0;
+  if(!mois||!annee||montant<=0){alert("Renseignez tous les champs.");return;}
+  var d=dossiers.filter(function(x){return x.id===id;})[0];
+  d.fact_type="mensuelle";d.fact_debut=annee+"-"+mois;d.fact_montant=montant;d.fact_montant_unique=null;
+  saveData();closeModal();renderList();renderFact();
+}
+function popupFacturationUnique(id){
+  closeModal();
+  showModal("<div class='modal'><div class='modal-title'>Facturation unique</div><div class='form-grp'><div class='form-lbl'>Montant facture (CHF)</div><input type='number' id='fact-unique-montant' min='0' placeholder='ex. 2000'></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerFacturationUnique("+id+")'>Enregistrer</button></div></div>");
+}
+function confirmerFacturationUnique(id){
+  var montant=parseFloat(document.getElementById("fact-unique-montant").value)||0;
+  if(montant<=0){alert("Montant invalide.");return;}
+  var d=dossiers.filter(function(x){return x.id===id;})[0];
+  d.fact_type="unique";d.fact_montant_unique=montant;d.fact_debut=null;d.fact_montant=null;
+  saveData();closeModal();renderList();renderFact();
+}
+function editFacturation(id){
+  var d=dossiers.filter(function(x){return x.id===id;})[0];
+  var p=d.fact_debut?d.fact_debut.split("-"):["",""];
+  showModal("<div class='modal'><div class='modal-title'>Modifier facturation mensuelle</div>"
+    +"<div class='form-grp'><div class='form-lbl'>Mois de premiere facturation</div>"
+    +"<div style='display:flex;gap:8px;'>"
+    +"<select id='fact-mois' style='flex:1;font-size:16px;padding:10px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);'>"
+    +"<option value='01'>Janvier</option><option value='02'>Fevrier</option><option value='03'>Mars</option><option value='04'>Avril</option><option value='05'>Mai</option><option value='06'>Juin</option><option value='07'>Juillet</option><option value='08'>Aout</option><option value='09'>Septembre</option><option value='10'>Octobre</option><option value='11'>Novembre</option><option value='12'>Decembre</option>"
+    +"</select>"
+    +"<input type='number' id='fact-annee' value='"+(p[0]||new Date().getFullYear())+"' min='2020' max='2099' style='width:90px;font-size:16px;padding:10px;border:1px solid var(--border2);border-radius:var(--radius);background:var(--bg);color:var(--text);'>"
+    +"</div></div>"
+    +"<div class='form-grp'><div class='form-lbl'>Montant mensuel (CHF)</div><input type='number' id='fact-montant' value='"+(d.fact_montant||"")+"' min='0'></div>"
+    +"<div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerFacturation("+id+")'>Enregistrer</button></div></div>");
+  setTimeout(function(){if(p[1])document.getElementById("fact-mois").value=p[1];},50);
+}
+function editFacturationUnique(id){
+  var d=dossiers.filter(function(x){return x.id===id;})[0];
+  showModal("<div class='modal'><div class='modal-title'>Modifier facturation unique</div><div class='form-grp'><div class='form-lbl'>Montant facture (CHF)</div><input type='number' id='fact-unique-montant' value='"+(d.fact_montant_unique||"")+"' min='0'></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerFacturationUnique("+id+")'>Enregistrer</button></div></div>");
+}
+function renderFact(){
+  var clients=dossiers.filter(function(d){return d.etape==="closed_won"&&((d.fact_debut&&d.fact_montant)||(d.fact_type==="unique"&&d.fact_montant_unique));});
+  var html="<div style='display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;'><div style='font-size:16px;font-weight:700;'>Facturation</div><div style='font-size:12px;color:var(--text2);'>"+clients.length+" client"+(clients.length>1?"s":"")+"</div></div>";
+  if(!clients.length){html+="<div class='empty'>Aucun client en facturation.</div>";document.getElementById("fact-inner").innerHTML=html;return;}
+  clients.forEach(function(d){
+    html+="<div class='fact-card'>";
+    if(d.fact_type==="unique"&&d.fact_montant_unique){
+      var cu=d.fact_montant_unique*0.20;
+      html+="<div style='display:flex;justify-content:space-between;align-items:flex-start;'><div><div class='fact-card-name'>"+esc(d.prenom)+" "+esc(d.nom)+"</div><div class='fact-card-sub'>"+esc(d.entreprise)+" · Facturation unique</div></div><button class='btn btn-xs' onclick='editFacturationUnique("+d.id+")'>Modifier</button></div>";
+      html+="<div class='fact-row'><div class='fact-item'><div class='f-num'>"+d.fact_montant_unique.toLocaleString("fr-CH")+"</div><div class='f-lbl'>Montant CHF</div></div><div class='fact-item'><div class='f-num'>"+cu.toLocaleString("fr-CH")+"</div><div class='f-lbl'>Commission CHF</div></div></div>";
+    } else {
+      var f=calcFact(d);if(!f){html+="</div>";return;}
+      var segs="";for(var i=0;i<12;i++) segs+="<div class='jauge-seg "+(i<f.jauge?"filled":"empty")+"'></div>";
+      html+="<div style='display:flex;justify-content:space-between;align-items:flex-start;'><div><div class='fact-card-name'>"+esc(d.prenom)+" "+esc(d.nom)+"</div><div class='fact-card-sub'>"+esc(d.entreprise)+" · Depuis "+labelDebutFact(d.fact_debut)+"</div></div><button class='btn btn-xs' onclick='editFacturation("+d.id+")'>Modifier</button></div>";
+      html+="<div class='fact-row'><div class='fact-item'><div class='f-num'>"+f.montantFacture.toLocaleString("fr-CH")+"</div><div class='f-lbl'>Facture CHF</div></div><div class='fact-item'><div class='f-num'>"+d.fact_montant.toLocaleString("fr-CH")+"</div><div class='f-lbl'>Mensualite</div></div><div class='fact-item'><div class='f-num'>"+f.commission.toLocaleString("fr-CH")+"</div><div class='f-lbl'>Commission</div></div></div>";
+      html+="<div class='jauge-track'>"+segs+"</div><div style='font-size:11px;color:var(--text2);'>"+f.jauge+"/12 mois · Commission figee a 12 mois</div>";
+    }
+    html+="</div>";
+  });
+  document.getElementById("fact-inner").innerHTML=html;
+}
+
+// ── ECHANGES ──
+function ajouterEchange(id){showModal("<div class='modal'><div class='modal-title'>Ajouter un echange</div><div class='form-grp'><div class='form-lbl'>Date</div><input type='date' id='ech-date' value='"+today()+"'></div><div class='form-grp'><div class='form-lbl'>Moyen</div><select id='ech-moyen'>"+MOYENS.map(function(m){return"<option>"+esc(m)+"</option>";}).join("")+"</select></div><div class='form-grp'><div class='form-lbl'>Resume</div><textarea id='ech-resume' placeholder='Resume...'></textarea></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerEchange("+id+")'>Ajouter</button></div></div>");}
+function confirmerEchange(id){var date=document.getElementById("ech-date").value;var moyen=document.getElementById("ech-moyen").value;var resume=document.getElementById("ech-resume").value.trim();if(!resume){alert("Resume requis");return;}var d=dossiers.filter(function(x){return x.id===id;})[0];if(!d.historique)d.historique=[];d.historique.push({date:date,moyen:moyen,resume:resume});saveData();closeModal();renderList();}
+function modifEchange(did,idx){var d=dossiers.filter(function(x){return x.id===did;})[0];var h=d.historique[idx];showModal("<div class='modal'><div class='modal-title'>Modifier echange</div><div class='form-grp'><div class='form-lbl'>Date</div><input type='date' id='ech-date' value='"+h.date+"'></div><div class='form-grp'><div class='form-lbl'>Moyen</div><select id='ech-moyen'>"+MOYENS.map(function(m){return"<option"+(m===h.moyen?" selected":"")+">"+esc(m)+"</option>";}).join("")+"</select></div><div class='form-grp'><div class='form-lbl'>Resume</div><textarea id='ech-resume'>"+esc(h.resume)+"</textarea></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmerModifEchange("+did+","+idx+")'>OK</button></div></div>");}
+function confirmerModifEchange(did,idx){var d=dossiers.filter(function(x){return x.id===did;})[0];d.historique[idx]={date:document.getElementById("ech-date").value,moyen:document.getElementById("ech-moyen").value,resume:document.getElementById("ech-resume").value.trim()};saveData();closeModal();renderList();}
+function supprimerEchange(did,idx){if(!confirm("Supprimer ?"))return;var d=dossiers.filter(function(x){return x.id===did;})[0];d.historique.splice(idx,1);saveData();renderList();}
+
+// ── PANNEAU DOSSIER ──
+function ouvrirNouveauDossier(){buildPanel(null);}
+function ouvrirEdition(id){buildPanel(dossiers.filter(function(x){return x.id===id;})[0]);}
+function buildPanel(d){
+  var isNew=!d;
+  if(!d)d={prenom:"",nom:"",entreprise:"",poste:"",secteur:"",produits:[],tel_mobile:"",tel_fixe:"",email:"",notes:"",forecast_licences:10,type_installation:"Data center",etape:"introduction"};
+  var prodChk=PRODUITS.map(function(p){return"<label class='chk-item'><input type='checkbox' value='"+p+"'"+(d.produits&&d.produits.indexOf(p)>=0?" checked":"")+"> "+p+"</label>";}).join("");
+  var html="<div class='panel-overlay' onclick='if(event.target===this)closePanel()'><div class='panel'>";
+  html+="<div class='panel-hdr'><div class='panel-title'>"+(isNew?"Nouveau dossier":"Modifier")+"</div><button class='btn' onclick='closePanel()'>&#10005;</button></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Prenom *</div><input id='p-prenom' value='"+esc(d.prenom)+"'></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>NOM *</div><input id='p-nom' value='"+esc(d.nom)+"'></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Entreprise</div><input id='p-entreprise' value='"+esc(d.entreprise)+"'></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Poste</div><input id='p-poste' value='"+esc(d.poste)+"'></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Secteur</div><input id='p-secteur' value='"+esc(d.secteur)+"'></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Produit(s)</div><div class='chk-grid'>"+prodChk+"</div></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Tel. mobile</div><input type='tel' id='p-tel-mobile' value='"+esc(d.tel_mobile)+"'></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Email</div><input type='email' id='p-email' value='"+esc(d.email)+"'></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Notes</div><textarea id='p-notes'>"+esc(d.notes)+"</textarea></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Licences estimees</div><input type='number' id='p-licences' value='"+(d.forecast_licences||10)+"' min='1'></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Type installation</div><select id='p-type-install'><option value='Data center'"+(d.type_installation!=="On-prem"?" selected":"")+">Data center — 100 CHF/user/mois</option><option value='On-prem'"+(d.type_installation==="On-prem"?" selected":"")+">On-prem — 50 CHF/user/mois</option></select></div>";
+  if(!isNew){
+    var etapeOpts=ETAPES.map(function(e){return"<option value='"+e.id+"'"+(d.etape===e.id?" selected":"")+">"+e.label+" ("+e.pct+"%)</option>";}).join("");
+    html+="<div class='form-grp'><div class='form-lbl'>Etape (manuel)</div><select id='p-etape'>"+etapeOpts+"</select></div>";
+  }
+  html+="<button class='btn btn-primary btn-full' onclick='sauvegarderDossier("+(isNew?"null":d.id)+","+isNew+")'>"+(isNew?"Creer le dossier":"Enregistrer")+"</button>";
+  html+="<button class='btn btn-full' onclick='closePanel()'>Annuler</button>";
+  html+="</div></div>";
+  showPanel(html);
+}
+function sauvegarderDossier(id,isNew){
+  var prenom=document.getElementById("p-prenom").value.trim();
+  var nom=document.getElementById("p-nom").value.trim();
+  if(!prenom||!nom){alert("Prenom et nom requis.");return;}
+  var produits=[];
+  document.querySelectorAll("#panel-zone input[type=checkbox]:checked").forEach(function(c){produits.push(c.value);});
+  var data={prenom:prenom,nom:nom,entreprise:document.getElementById("p-entreprise").value.trim(),poste:document.getElementById("p-poste").value.trim(),secteur:document.getElementById("p-secteur").value.trim(),produits:produits,tel_mobile:document.getElementById("p-tel-mobile").value.trim(),tel_fixe:"",email:document.getElementById("p-email").value.trim(),notes:document.getElementById("p-notes").value.trim(),forecast_licences:parseInt(document.getElementById("p-licences").value)||10,type_installation:document.getElementById("p-type-install").value};
+  if(isNew){
+    var nd={id:nextId++,etape:"introduction",date_etape:today(),historique:[],date_relance:null,date_poc:null,date_poc_fin:null,date_demo_faite:null,motif_perdu:"",relance_manuelle_date:null,relance_manuelle_sujet:""};
+    for(var k in data)nd[k]=data[k];
+    dossiers.unshift(nd);saveData();closePanel();currentListe="introduction";renderList();
+    setTimeout(function(){popupEtape1(nd.id);},200);
+  } else {
+    var idx=-1;for(var i=0;i<dossiers.length;i++){if(dossiers[i].id===id){idx=i;break;}}
+    if(idx<0)return;
+    for(var k in data)dossiers[idx][k]=data[k];
+    var ep=document.getElementById("p-etape");if(ep)dossiers[idx].etape=ep.value;
+    saveData();closePanel();renderList();
+  }
+}
+
+// ── A FAIRE ──
+function getTachesAuto(){
+  var t=today(),res=[];
+  var masques={};
+  tachesLibres.forEach(function(tl){if(tl.masqueAutoId)masques[tl.masqueAutoId]=true;});
+  dossiers.forEach(function(d){
+    if(d.etape==="closed_won"||d.etape==="closed_lost")return;
+    if(d.etape==="introduction"&&d.date_relance){var diff=diffDays(d.date_relance);if(!masques["ar_"+d.id])res.push({id:"ar_"+d.id,dossierId:d.id,client:d.prenom+" "+d.nom,entreprise:d.entreprise,desc:"Relance client",date:d.date_relance,diff:diff,type:"auto"});}
+    if(d.etape==="demo"&&d.date_etape){var diff=diffDays(d.date_etape);if(!masques["ad_"+d.id])res.push({id:"ad_"+d.id,dossierId:d.id,client:d.prenom+" "+d.nom,entreprise:d.entreprise,desc:"Demo prevue",date:d.date_etape,diff:diff,type:"auto"});}
+    if(d.etape==="negociation"&&d.date_etape){var j7=addDays(d.date_etape,7);if(!masques["an_"+d.id])res.push({id:"an_"+d.id,dossierId:d.id,client:d.prenom+" "+d.nom,entreprise:d.entreprise,desc:"Suivi nego J+7",date:j7,diff:diffDays(j7),type:"auto"});}
+  });
+  return res.sort(function(a,b){return(a.diff||0)-(b.diff||0);});
+}
+function countRetard(){var t=today(),n=0;getTachesAuto().forEach(function(x){if((x.diff||0)<=0)n++;});tachesLibres.forEach(function(x){if(x.date&&x.date<=t)n++;});return n;}
+function majBadge(){var n=countRetard();var b=document.getElementById("badge-retard");if(b){if(n>0){b.textContent=n;b.style.display="block";}else b.style.display="none";}}
+
+function renderTodo(){
+  var t=today();
+  var tAuto=getTachesAuto();
+  var tLib=tachesLibres.map(function(x){return{id:x.id,dossierId:x.dossierId,client:x.client,entreprise:x.entreprise,desc:x.desc,date:x.date,diff:x.date?diffDays(x.date):999,type:"libre"};});
+  var toutes=tAuto.concat(tLib).sort(function(a,b){return(a.diff||0)-(b.diff||0);});
+  var urg=toutes.filter(function(x){return(x.diff||0)<=0;});
+  var bien=toutes.filter(function(x){return(x.diff||0)>0&&(x.diff||0)<=7;});
+  var ok=toutes.filter(function(x){return(x.diff||0)>7;});
+  var total=toutes.length;
+
+  function renderItem(item){
+    var diff=item.diff||0;
+    var cls=diff<=0?"urgent":diff<=7?"bientot":"ok";
+    var dateLabel=item.date?(fmtDate(item.date)+(diff!==999?" · "+urgLabel(diff):"")):"";
+    var clientStr=esc(item.client)+(item.entreprise?" · "+esc(item.entreprise):"");
+    return "<div class='todo-item "+cls+"' data-id='"+item.id+"' data-type='"+item.type+"' data-dossier='"+(item.dossierId||"")+"'>"
+      +"<input type='checkbox' class='todo-check' onclick='cocherItem(this)'>"
+      +"<div class='todo-content'><div class='todo-client'>"+clientStr+"</div>"
+      +"<div class='todo-desc'>"+esc(item.desc)+"</div>"
+      +(dateLabel?"<div class='todo-date'>"+dateLabel+"</div>":"")
+      +"</div></div>";
+  }
+  function renderCol(key,emoji,label,items){
+    var lim=todoLimites[key]||5;
+    var vis=items.slice(0,lim);
+    var reste=items.length-vis.length;
+    return "<div class='todo-col'><div class='todo-col-hdr'><div class='todo-col-title'>"+emoji+" "+label+"</div><span class='todo-col-count'>"+items.length+"</span></div>"
+      +"<div class='todo-col-body'>"+(vis.length?vis.map(renderItem).join(""):"<div style='font-size:12px;color:var(--text2);padding:8px;'>Aucune tache.</div>")
+      +(reste>0?"<div class='todo-more'><button class='btn btn-sm' onclick='todoPlus(\""+key+"\")'>+ "+Math.min(reste,5)+" de plus</button></div>":"")
+      +"</div></div>";
+  }
+
+  var dossierOpts=dossiers.filter(function(d){return d.etape!=="closed_won"&&d.etape!=="closed_lost";}).map(function(d){return"<option value='"+d.id+"'>"+esc(d.prenom)+" "+esc(d.nom)+"</option>";}).join("");
+
+  var html="<div style='font-size:16px;font-weight:700;margin-bottom:12px;'>A faire <span style='font-size:13px;font-weight:400;color:var(--text2);'>"+total+" tache"+(total>1?"s":"")+"</span></div>";
+  html+="<div class='todo-add-box'><div style='font-size:13px;font-weight:600;margin-bottom:10px;'>+ Ajouter une tache</div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Description</div><input type='text' id='todo-new-desc' placeholder='Description...'></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Dossier</div><select id='todo-new-dossier'><option value='selabs'>SeLabs</option>"+dossierOpts+"</select></div>";
+  html+="<div class='form-grp'><div class='form-lbl'>Date limite</div><input type='date' id='todo-new-date'></div>";
+  html+="<button class='btn btn-primary btn-full' onclick='ajouterTacheLibre()'>Ajouter</button></div>";
+  html+="<div class='todo-cols'>";
+  html+=renderCol("urgent","&#128308;","En retard",urg);
+  html+=renderCol("bientot","&#128993;","Cette semaine",bien);
+  html+=renderCol("ok","&#9898;","A venir",ok);
+  html+="</div>";
+  document.getElementById("todo-inner").innerHTML=html;
+  majBadge();
+}
+function todoPlus(key){todoLimites[key]=(todoLimites[key]||5)+5;renderTodo();}
+function ajouterTacheLibre(){
+  var desc=document.getElementById("todo-new-desc").value.trim();
+  if(!desc){alert("Description requise.");return;}
+  var dv=document.getElementById("todo-new-dossier").value;
+  var date=document.getElementById("todo-new-date").value||null;
+  var isSel=(dv==="selabs");
+  var did=(!isSel&&dv)?parseInt(dv):null;
+  var dos=did?dossiers.filter(function(x){return x.id===did;})[0]:null;
+  tachesLibres.push({id:nextTacheId++,dossierId:isSel?"selabs":(dos?dos.id:null),client:isSel?"SeLabs":(dos?dos.prenom+" "+dos.nom:"General"),entreprise:dos?dos.entreprise:"",desc:desc,date:date,type:"libre"});
+  if(dos&&date){if(!dos.relance_manuelle_date||date<dos.relance_manuelle_date){dos.relance_manuelle_date=date;dos.relance_manuelle_sujet=desc;saveData();}}
+  saveTaches();document.getElementById("todo-new-desc").value="";document.getElementById("todo-new-date").value="";renderTodo();
+}
+
+// ── COCHAGE ──
+function cocherItem(cb){
+  var el=cb.parentNode;while(el&&!el.dataset.id){el=el.parentNode;}if(!el)return;
+  var raw=el.dataset.dossier||"";
+  var did=(raw===""||raw==="null")?null:(raw==="selabs"?"selabs":parseInt(raw)||null);
+  var descEl=el.querySelector(".todo-desc");
+  _tache={itemId:el.dataset.id,type:el.dataset.type,dossierId:did,desc:descEl?descEl.textContent:"Tache"};
+  popup_choix();
+}
+function popup_choix(){
+  var isSel=(_tache.dossierId==="selabs"||!_tache.dossierId);
+  var d=!isSel?dossiers.filter(function(x){return x.id===_tache.dossierId;})[0]:null;
+  var lbl=d?(esc(d.prenom)+" "+esc(d.nom)+" · "+esc(d.entreprise)):(isSel?"SeLabs":"");
+  if(isSel){
+    showModal("<div class='modal'><div class='modal-title'>"+esc(_tache.desc)+"</div>"+(lbl?"<div class='modal-body'>"+lbl+"</div>":"")+"<div class='modal-choices'><button class='modal-choice success' onclick='selabs_fait()'>Fait</button><button class='modal-choice' onclick='selabs_reprog()'>A reprogrammer</button></div><div class='modal-footer'><button class='btn' onclick='annuler_coche()'>Annuler</button></div></div>");
+  } else {
+    showModal("<div class='modal'><div class='modal-title'>"+esc(_tache.desc)+"</div>"+(lbl?"<div class='modal-body'>"+lbl+"</div>":"")+"<div class='modal-choices'><button class='modal-choice success' onclick='tache_fait()'>Fait</button><button class='modal-choice' onclick='tache_reprog()'>A reprogrammer</button></div><div class='modal-footer'><button class='btn' onclick='annuler_coche()'>Annuler</button></div></div>");
+  }
+}
+function annuler_coche(){closeModal();}
+function selabs_fait(){tachesLibres=tachesLibres.filter(function(t){return String(t.id)!==String(_tache.itemId);});saveTaches();closeModal();renderTodo();}
+function selabs_reprog(){closeModal();showModal("<div class='modal'><div class='modal-title'>Reprogrammer</div><div class='form-grp'><div class='form-lbl'>Nouvelle date</div><input type='date' id='reprg-date'></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmer_selabs_reprog()'>OK</button></div></div>");}
+function confirmer_selabs_reprog(){var date=document.getElementById("reprg-date").value;if(!date){alert("Date requise.");return;}var t=tachesLibres.filter(function(x){return String(x.id)===String(_tache.itemId);})[0];if(t)t.date=date;saveTaches();closeModal();renderTodo();}
+function tache_fait(){closeModal();var d=dossiers.filter(function(x){return x.id===_tache.dossierId;})[0];if(!d){suppr_tache();renderTodo();return;}showModal("<div class='modal'><div class='modal-title'>Renseigner l'echange</div><div class='modal-body'>"+esc(d.prenom)+" "+esc(d.nom)+"</div><div class='form-grp'><div class='form-lbl'>Date</div><input type='date' id='ech-t-date' value='"+today()+"'></div><div class='form-grp'><div class='form-lbl'>Moyen</div><select id='ech-t-moyen'>"+MOYENS.map(function(m){return"<option>"+esc(m)+"</option>";}).join("")+"</select></div><div class='form-grp'><div class='form-lbl'>Resume</div><textarea id='ech-t-resume'>"+esc(_tache.desc)+"</textarea></div><div class='modal-footer'><button class='btn' onclick='tache_suite()'>Passer</button><button class='btn btn-primary' onclick='confirmer_ech_suite()'>Suivant</button></div></div>");}
+function confirmer_ech_suite(){var d=dossiers.filter(function(x){return x.id===_tache.dossierId;})[0];if(d){if(!d.historique)d.historique=[];var r=document.getElementById("ech-t-resume").value.trim();if(r)d.historique.push({date:document.getElementById("ech-t-date").value,moyen:document.getElementById("ech-t-moyen").value,resume:r});saveData();}closeModal();tache_suite();}
+function tache_suite(){
+  var d=dossiers.filter(function(x){return x.id===_tache.dossierId;})[0];
+  var elabel=getEtapeLabel(d);
+  showModal("<div class='modal'><div class='modal-title'>Quelle est la suite ?</div><div class='modal-choices'>"+(elabel?"<button class='modal-choice success' onclick='tache_passer()'>"+elabel+"</button>":"")+"<button class='modal-choice' onclick='tache_reprog()'>Reprogrammer une relance</button></div><div class='modal-footer'><button class='btn' onclick='terminer_tache()'>Terminer</button></div></div>");
+}
+function getEtapeLabel(d){if(!d)return null;var m={introduction:"Demo prevue",demo:"POC prevu",demo_faite:"Programmer POC",poc_prevu:"POC en cours",poc_en_cours:"Passer en Negociation",negociation:"Passer au Closing",closing:"Cloturer"};return m[d.etape]?m[d.etape]+" \u2192":null;}
+function tache_passer(){closeModal();suppr_tache();var d=dossiers.filter(function(x){return x.id===_tache.dossierId;})[0];if(!d)return;currentListe=d.etape;openCards[d.id]=true;showPage("dossiers");setTimeout(function(){if(d.etape==="introduction")popupEtape1(d.id);else if(d.etape==="demo")popupEtape2(d.id);else if(d.etape==="demo_faite")programmerPOC(d.id);else if(d.etape==="poc_prevu"||d.etape==="poc_en_cours")popupEtape3(d.id);else if(d.etape==="negociation")popupEtape4(d.id);else if(d.etape==="closing")popupEtape5(d.id);},200);}
+function tache_reprog(){closeModal();showModal("<div class='modal'><div class='modal-title'>Reprogrammer la relance</div><div class='form-grp'><div class='form-lbl'>Nouvelle date</div><input type='date' id='reprg2-date'></div><div class='form-grp'><div class='form-lbl'>Sujet</div><input type='text' id='reprg2-sujet' placeholder='Sujet...'></div><div class='modal-footer'><button class='btn' onclick='closeModal()'>Annuler</button><button class='btn btn-primary' onclick='confirmer_reprog()'>OK</button></div></div>");}
+function confirmer_reprog(){
+  var date=document.getElementById("reprg2-date").value;var sujet=document.getElementById("reprg2-sujet").value.trim()||"Relance";
+  if(!date){alert("Date requise.");return;}
+  if(_tache.type==="libre"){var t=tachesLibres.filter(function(x){return String(x.id)===String(_tache.itemId);})[0];if(t){t.date=date;t.desc=sujet;saveTaches();}}
+  else{var nd={id:nextTacheId++,dossierId:_tache.dossierId,client:"",entreprise:"",desc:sujet,date:date,type:"libre",masqueAutoId:String(_tache.itemId)};var dd=_tache.dossierId?dossiers.filter(function(x){return x.id===_tache.dossierId;})[0]:null;if(dd){nd.client=dd.prenom+" "+dd.nom;nd.entreprise=dd.entreprise;}tachesLibres.push(nd);saveTaches();}
+  if(_tache.dossierId&&_tache.dossierId!=="selabs"){var d=dossiers.filter(function(x){return x.id===_tache.dossierId;})[0];if(d){d.relance_manuelle_date=date;d.relance_manuelle_sujet=sujet;saveData();}}
+  closeModal();renderTodo();
+}
+function terminer_tache(){closeModal();suppr_tache();renderTodo();}
+function suppr_tache(){if(_tache.type==="libre"){tachesLibres=tachesLibres.filter(function(t){return String(t.id)!==String(_tache.itemId);});saveTaches();}}
+</script>
+</body>
+</html>
